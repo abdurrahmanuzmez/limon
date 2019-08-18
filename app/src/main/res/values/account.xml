@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string id="1" name="aa">
+        <salary>testing</salary>
+    </string>
+</resources>
