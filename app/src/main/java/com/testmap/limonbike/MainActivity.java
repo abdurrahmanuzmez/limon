@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -15,6 +16,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,6 +66,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback mLocationCallback;
 
+    ImageView imageView;
+
     TextView textView3;
     TextView textView4;
     TextView textView5;
@@ -74,6 +78,24 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        imageView = findViewById(R.id.imageView);
+
+        if (1 == 1){
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            String name = user.getDisplayName();
+            String[] output = name.split(":");
+            if (output[0].equals("start")){
+                imageView =(ImageView)findViewById(R.id.imageView);
+                Drawable myDrawable = getResources().getDrawable(R.drawable.end_trip);
+                imageView.setImageDrawable(myDrawable);
+
+            }else{
+                imageView =(ImageView)findViewById(R.id.imageView);
+                Drawable myDrawable = getResources().getDrawable(R.drawable.scan_to_ride);
+                imageView.setImageDrawable(myDrawable);
+            }
+        }
 
         textView3 = findViewById(R.id.textView4);
         textView5 = findViewById(R.id.textView5);
@@ -267,12 +289,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
 
-        Date currentTime = Calendar.getInstance().getTime();
+
 
         try {
             boolean success = map.setMapStyle(
                     MapStyleOptions.loadRawResourceStyle(
-                            this, R.raw.google_style));
+
+                            this, R.raw.dark_google_style));
 
             if (!success) {
                 Log.e("MapsActivityRaw", "Style parsing failed.");
@@ -283,7 +306,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         map.setMaxZoomPreference(16);
         loginToFirebase();
-
         /*map = googleMap;
 
         LatLng Kadıkoy = new LatLng(40.964753, 29.076080);

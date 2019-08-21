@@ -99,7 +99,7 @@ public class changeActivity extends AppCompatActivity implements View.OnClickLis
                     String newPassword = qrCodeNameValue;
                     myRef.child("user").child(qrCodeNameValue).child("startdate").setValue("email: " + user.getEmail() + " time: " + currentTime);
                     UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                            .setDisplayName(qrCodeNameValue)
+                            .setDisplayName("start: " + qrCodeNameValue)
                             .build();
 
                     user.updateProfile(profileUpdates)
