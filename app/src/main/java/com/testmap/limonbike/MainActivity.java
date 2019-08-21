@@ -460,19 +460,22 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    public void startEndTripActivity(View view) {
-        //Date currentTime = Calendar.getInstance().getTime();
-
-        //myRef.child("918273645").child("enddate").setValue(currentTime);
-
-        Intent intent = new Intent(getApplicationContext(),endTripActivity.class);
-        startActivity(intent);
-    }
 
     public void startQrScreenAct(View view){
+        if (1 == 1){
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            String name = user.getDisplayName();
+            String[] output = name.split(":");
+            if (output[0].equals("start")){
+                Intent intent = new Intent(getApplicationContext(),endTripActivity.class);
+                startActivity(intent);
 
-        Intent intent = new Intent(getApplicationContext(),changeActivity.class);
-        startActivity(intent);
+            }else{
+                Intent intent = new Intent(getApplicationContext(),changeActivity.class);
+                startActivity(intent);
+            }
+        }
+
         /*CircleOptions circleOptions = new CircleOptions()
 
                 .center(new LatLng(result, result2))

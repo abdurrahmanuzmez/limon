@@ -1,12 +1,16 @@
 package com.testmap.limonbike;
 
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -40,8 +44,9 @@ public class endTripBillActivity extends AppCompatActivity {
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String name = user.getDisplayName();
+        String[] output = name.split("start:");
 
-        myRef = database.getReference("user").child(name).child("enddate");
+        myRef = database.getReference("user").child(output[1]).child("enddate");
 
         myRef.addValueEventListener(new ValueEventListener() {
 
@@ -56,6 +61,20 @@ public class endTripBillActivity extends AppCompatActivity {
             public void onCancelled(DatabaseError error) {
             }
         });
+
+        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                .setDisplayName("end")
+                .build();
+
+        user.updateProfile(profileUpdates)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                        }
+                    }
+                });
+
 
     }
 
