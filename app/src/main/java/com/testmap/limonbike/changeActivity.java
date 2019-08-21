@@ -2,20 +2,43 @@ package com.testmap.limonbike;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Calendar;
+import java.util.Date;
+
 
 public class changeActivity extends AppCompatActivity implements View.OnClickListener {
+
+
+    FirebaseDatabase firebaseDatabase;
+    DatabaseReference myRef;
+    private FirebaseAuth mAuth;
+    private StorageReference mStorageRef;
+    private DatabaseReference mDatabase;
+    DatabaseReference mRootRef = FirebaseDatabase.getInstance().getReference();
+    DatabaseReference mConditionRef = mRootRef.child("condition");
+
 
     //View Objects
     private Button buttonScan;
@@ -27,6 +50,12 @@ public class changeActivity extends AppCompatActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change);
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        myRef = firebaseDatabase.getReference();
+
+        mAuth = FirebaseAuth.getInstance();
+
+        mStorageRef = FirebaseStorage.getInstance().getReference();
 
 
         //View objects
@@ -64,7 +93,26 @@ public class changeActivity extends AppCompatActivity implements View.OnClickLis
                     String qrCodeNameValue = textViewName.getText().toString();
                     String qrCodeAddressValue = textViewAddress.getText().toString();
 
-                    Intent intent = new Intent(getApplicationContext(),showPasswordActivity.class);
+                    Date currentTime = Calendar.getInstance().getTime();
+
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    String newPassword = qrCodeNameValue;
+                    myRef.child("user").child(qrCodeNameValue).child("startdate").setValue("email: " + user.getEmail() + " time: " + currentTime);
+                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                            .setDisplayName(qrCodeNameValue)
+                            .build();
+
+                    user.updateProfile(profileUpdates)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                    }
+                                }
+                            });
+
+
+                    Intent intent = new Intent(getApplicationContext(),passwordActivity.class);
 
                     intent.putExtra("qrCodeNameValue", qrCodeNameValue);
                     intent.putExtra("qrCodeAddressValue", qrCodeAddressValue);

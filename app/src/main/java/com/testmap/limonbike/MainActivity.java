@@ -4,6 +4,8 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -25,8 +27,12 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -60,6 +66,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     TextView textView3;
     TextView textView4;
+    TextView textView5;
     FirebaseDatabase firebaseDatabase;
     DatabaseReference myRef;
     private Button mLocationButton;
@@ -69,7 +76,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_main);
 
         textView3 = findViewById(R.id.textView4);
-        textView4 = findViewById(R.id.textView5);
+        textView5 = findViewById(R.id.textView5);
         mLocationButton = (Button) findViewById(R.id.button_location);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(
@@ -91,8 +98,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
                 if (!mTrackingLocation) {
                     startTrackingLocation();
+                    textView5.setText(R.string.loading);/*
+                    if ((textView3.getText().toString().equals(R.string.loading))){
+                        textView5.setText("");
+                    } else if(!(textView3.getText().toString().equals(R.string.loading))){
+                        textView5.setText("SÜRÜŞÜN TADINI ÇIKARIN");
+                    }*/
                 } else {
-                    stopTrackingLocation();
                 }
             }
         });
@@ -141,6 +153,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             // Set a loading text while you wait for the address to be
             // returned
             textView3.setText(getString(R.string.address_text,
+                    getString(R.string.loading),
+                    System.currentTimeMillis()));
+            textView5.setText(getString(R.string.address_text,
                     getString(R.string.loading),
                     System.currentTimeMillis()));
             mLocationButton.setText(R.string.stop_tracking_location);
@@ -227,6 +242,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             // Update the UI
             textView3.setText(getString(R.string.address_text,
                     result, System.currentTimeMillis()));
+            textView5.setText(getString(R.string.enjoy_the_ride));
         }
     }
 
@@ -251,10 +267,22 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
 
+        Date currentTime = Calendar.getInstance().getTime();
+
+        try {
+            boolean success = map.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                            this, R.raw.google_style));
+
+            if (!success) {
+                Log.e("MapsActivityRaw", "Style parsing failed.");
+            }
+        } catch (Resources.NotFoundException e) {
+            Log.e("MapsActivityRaw", "Can't find style.", e);
+        }
 
         map.setMaxZoomPreference(16);
         loginToFirebase();
-
 
         /*map = googleMap;
 
@@ -290,8 +318,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void loginToFirebase() {
-        String email = getString(R.string.firebase_email);
-        String password = getString(R.string.firebase_password);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String email = user.getEmail();
+        String password = "123456";
         // Authenticate with Firebase and subscribe to updates
         FirebaseAuth.getInstance().signInWithEmailAndPassword(
                 email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -362,37 +391,86 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onBackPressed() {
     }
-/*
-    public void startqrReaderAct(View view) {
-        Intent intent = new Intent(getApplicationContext(), changeActivity.class);
-        startActivity(intent);
-    }
-*/
-    public void startEndTripActivity(View view) {
-        //Date currentTime = Calendar.getInstance().getTime();
 
-        //myRef.child("918273645").child("enddate").setValue(currentTime);
-
-        Intent intent = new Intent(getApplicationContext(),changeActivity.class);
-        startActivity(intent);
-    }
-
-    public void sokaklarvepolisler(View view){
+    public void refresh(View view){
+        if (!(textView3.getText().toString().equals("notready"))){
 
         String[] output = textView3.getText().toString().split("Türkiye");
         String[] output2 = output[1].split("-");
         String[] output3 = output2[1].split("Timestamp");
         String[] output4 = output3[0].split("\\n");
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        //String email = user.getEmail();
+        double result = Double.parseDouble(output2[0]);
+        double result2 = Double.parseDouble(output4[0]);
+        LatLng location = new LatLng(result2, result);
+        map.addMarker(new MarkerOptions().position(location).title("siz"));
 
-        //myRef.child("user").child("startdate").child("rnd").setValue(email);
+
+        CircleOptions circleOptionsLittle = new CircleOptions()
+
+                .center(new LatLng(result2, result))
+                .radius(30) // radius in meters
+                .fillColor(0x8800CCFF) //this is a half transparent blue, change "88" for the transparency
+                .strokeColor(Color.BLUE) //The stroke (border) is blue
+                .strokeWidth(2); // The width is in pixel, so try it!
+
+
+        CircleOptions circleOptions = new CircleOptions()
+
+                .center(new LatLng(result2, result))
+                .radius(300) // radius in meters
+                .fillColor(Color.argb(97, 93, 185, 139)) //this is a half transparent blue, change "88" for the transparency
+                .strokeColor(Color.argb(20, 93, 185, 139)) //The stroke (border) is blue
+                .strokeWidth(2); // The width is in pixel, so try it!
+
+        // Get back the mutable Circle
+        map.addCircle(circleOptions);
+        map.addCircle(circleOptionsLittle);
+        CameraPosition cameraPos = new CameraPosition.Builder().tilt(60).target(location).zoom(15).build();
+        map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPos), 1000, null);
+
+        map.setMaxZoomPreference(16);
+        }
+        else {
+            textView5.setText("Lütfen konumunuzun açık olduğundan emin olunuz.");
+        }
+
+    }
+
+    public void startEndTripActivity(View view) {
+        //Date currentTime = Calendar.getInstance().getTime();
+
+        //myRef.child("918273645").child("enddate").setValue(currentTime);
+
+        Intent intent = new Intent(getApplicationContext(),endTripActivity.class);
+        startActivity(intent);
+    }
+
+    public void startQrScreenAct(View view){
 
         Intent intent = new Intent(getApplicationContext(),changeActivity.class);
-        intent.putExtra("L1Value", output2[0]);
-        intent.putExtra("L2Value", output4[0]);
-        //intent.putExtra("emailValue", email);
         startActivity(intent);
+        /*CircleOptions circleOptions = new CircleOptions()
+
+                .center(new LatLng(result, result2))
+                .radius(30) // radius in meters
+                .fillColor(0x8800CCFF) //this is a half transparent blue, change "88" for the transparency
+                .strokeColor(Color.BLUE) //The stroke (border) is blue
+                .strokeWidth(2); // The width is in pixel, so try it!
+
+        // Get back the mutable Circle
+        map.addCircle(circleOptions);*/
+
+        //LatLng location = new LatLng(result, result2);
+        //LatLng location = new LatLng(result, result2);
+        //map.addMarker(new MarkerOptions().position(location).title("anan"));
+        //myRef.child("user").child("startdate").child("rnd").setValue(email);
+
+        //Intent intent = new Intent(getApplicationContext(),changeActivity.class);
+        //intent.putExtra("L1Value", output2[0]);
+        //intent.putExtra("L2Value", output4[0]);
+        //intent.putExtra("emailValue", email);
+        //startActivity(intent);
 
         //myRef.child("locations").child("gps").child("longitude").setValue(output2[0]);
         //myRef.child("locations").child("gps").child("latitude").setValue(output4[0]);

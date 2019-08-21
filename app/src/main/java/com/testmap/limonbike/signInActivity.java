@@ -73,8 +73,21 @@ public class signInActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
 
                         if (task.isSuccessful()) {
-                            Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-                            startActivity(intent);
+
+                            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+                            user.updateEmail(emailText.getText().toString())
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+
+                                                Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                                                startActivity(intent);
+
+                                            }
+                                        }
+                                    });
                         }
 
                     }

@@ -26,10 +26,10 @@
         </activity>
         <activity android:name=".MainActivity" />
         <activity android:name=".changeActivity" />
-        <activity android:name=".attentionActivity" />
-        <activity android:name=".showPasswordActivity" />
         <activity android:name=".endTripActivity" />
-        <activity android:name=".endTripBillActivity"></activity>
+        <activity android:name=".endTripBillActivity" />
+        <activity android:name=".passwordActivity" />
+        <activity android:name=".attentionActivity"></activity>
     </application>
 
 </manifest>
